@@ -4,7 +4,7 @@ This project is a Python script designed for fast and efficient copying of large
 
 ## 🚀 Features
 
-- **Multithreading:** Utilizes multiple threads to copy files simultaneously (default: 40 threads).
+- **Multithreading:** Utilizes multiple threads to copy files simultaneously (default: 4 threads).
 - **Producer–Consumer Pattern:**
   - **Producer:** A single thread quickly indexes files and pushes them into a queue.
   - **Consumers:** A pool of worker threads takes tasks from the queue and performs the actual copying.
@@ -33,4 +33,4 @@ Before running the script, configure the source and destination directories in `
 
 source_dir = r"D:\Fotky"       # Path to the source folder
 destination_dir = r"D:\Test"   # Path where files will be copied
-number_of_threads = 40         # Number of worker threads
+number_of_threads = 4         # Number of worker threads (cpu cores)s

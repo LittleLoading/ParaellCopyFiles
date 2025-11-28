@@ -9,7 +9,7 @@ from FileManager import file_consumer
 if __name__ == "__main__":
     source_dir = r"D:\Fotky"
     destination_dir = r"D:\Test"
-    number_of_threads = 40
+    number_of_threads = 4
 
     if not os.path.exists(source_dir):
         print(f"Error: Source directory '{source_dir}' does not exist.")
