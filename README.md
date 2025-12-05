@@ -1,36 +1,48 @@
 # Parallel File Copier
 
-This project is a Python script designed for fast and efficient copying of large numbers of files from one folder to another. It uses **multithreading** and the **Producer–Consumer** design pattern to maximize performance.
+This project is a Python script designed for fast and efficient copying of large numbers of files recursively from a source directory to a destination directory. It implements the **Producer–Consumer** design pattern using **multithreading** to maximize I/O performance.
 
 ## 🚀 Features
 
-- **Multithreading:** Utilizes multiple threads to copy files simultaneously (default: 4 threads).
+- **Multithreading:** Utilizes multiple threads to copy files simultaneously (user-defined number of threads).
 - **Producer–Consumer Pattern:**
-  - **Producer:** A single thread quickly indexes files and pushes them into a queue.
-  - **Consumers:** A pool of worker threads takes tasks from the queue and performs the actual copying.
-- **Metadata Preservation:** Uses `shutil.copy2`, ensuring copied files keep their original creation and modification timestamps.
-- **Robustness:** Automatically creates missing target directories.
-- **Statistics:** Displays the total number of files found, their combined size, and the total processing time.
+  - **Producer:** A single thread efficiently traverses the directory tree and indexes files into a queue.
+  - **Consumers:** A pool of worker threads picks up tasks from the queue and performs the actual copying.
+- **Recursive Structure:** Handles nested folders and automatically mirrors the directory structure in the destination.
+- **Metadata Preservation:** Uses `shutil.copy2`, ensuring copied files retain their original creation and modification timestamps.
+- **Robustness:** Automatically creates missing target directories (`os.makedirs`).
+- **Statistics:** Displays the total number of files found, their combined size, and the total execution time.
 
 ## 📂 Project Structure
 
-- `main.py` – The main entry point. Configures paths, starts threads, and measures execution time.
-- `FileManager.py` – Contains logic for the **Producer** (file discovery) and **Consumer** (copying).
-- `lib/ReadableSize.py` – Helper function that converts bytes into a human-readable format (KB, MB, GB...).
+- `main.py` – The entry point. Configures paths, initializes the copier, and handles execution.
+- `ParallelFileCopier.py` – Contains the `ParallelFileCopier` class with the **Producer** and **Consumer** logic.
+- `lib/ReadableSize.py` – Helper module to convert bytes into human-readable formats (KB, MB, GB).
 
 ## 🛠️ Requirements
 
-- Python 3.x  
-- Standard libraries only (no pip installations needed):  
-  `os`, `queue`, `threading`, `time`, `shutil`
+- **Python 3.x**
+- Standard libraries only (no `pip install` needed):
+  - `os`, `queue`, `threading`, `time`, `shutil`
 
-## ⚙️ Configuration
+## ⚙️ Usage
 
-Before running the script, configure the source and destination directories in `main.py`:
+1. **Clone or download** the repository.
+2. **Open `main.py`** and configure your paths and thread count:
 
 ```python
-# main.py
+from ParallelFileCopier import ParallelFileCopier
 
-source_dir = r"D:\Fotky"       # Path to the source folder
-destination_dir = r"D:\Test"   # Path where files will be copied
-number_of_threads = 4         # Number of worker threads (cpu cores)s
+if __name__ == "__main__":
+    # Configuration
+    SOURCE = r"D:\Fotky"       # Source directory
+    DESTINATION = r"D:\Test"   # Destination directory
+    THREADS = 4                # Number of worker threads (usually CPU cores count)
+
+    try:
+        # Initialize and start the copier
+        copier = ParallelFileCopier(SOURCE, DESTINATION, THREADS)
+        copier.start_copying()
+
+    except Exception as e:
+        print(f"Error: {e}")
