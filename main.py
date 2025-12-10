@@ -1,14 +1,18 @@
 from ParallelFileCopier import ParallelFileCopier
-
+from ConfigurationLoader import load_config
 
 if __name__ == "__main__":
+    config = load_config()
 
-    SOURCE = r"D:\\Fotku"
-    DESTINATION = r"D:\\Test"
-    THREADS = 4
+    source = config.get("source")
+    destination = config.get("destination")
+    threads = config.get("threads",4)
+
+    if not source or not destination:
+        raise Exception("Source and destination are not defined")
 
     try:
-        copier = ParallelFileCopier(SOURCE, DESTINATION, THREADS)
+        copier = ParallelFileCopier(source, destination, threads)
 
         copier.start_copying()
 
