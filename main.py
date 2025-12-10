@@ -1,8 +1,4 @@
-
 from ParallelFileCopier import ParallelFileCopier
-
-
-
 
 
 if __name__ == "__main__":
