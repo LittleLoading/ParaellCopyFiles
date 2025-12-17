@@ -5,6 +5,10 @@ import os.path
 
 class Logger:
     def __init__(self,path_file):
+        """
+
+        :param path_file:
+        """
         self.path = None
 
         if not path_file or not isinstance(path_file, str):
@@ -16,7 +20,7 @@ class Logger:
             if directory and not os.path.exists(directory):
                 os.makedirs(directory,exist_ok=True)
 
-                self.path = path_file
+            self.path = path_file
         except OSError as e:
             print(f"Logger Error: Cant create dir for logs {e}")
             self.path  = None
