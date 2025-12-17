@@ -4,8 +4,9 @@ import shutil
 import threading
 import time
 
-from lib.ReadableSize import get_readable_size
 
+from lib.ReadableSize import get_readable_size
+from Logger import Logger
 
 class ParallelFileCopier:
     """
@@ -13,7 +14,7 @@ class ParallelFileCopier:
         directory using multiple threads for improved performance.
         """
 
-    def __init__(self, source_dir: str, destination_dir: str, number_of_threads: int):
+    def __init__(self, source_dir: str, destination_dir: str, number_of_threads: int, logger: Logger):
         """
         Initializes the ParallelFileCopier with source/destination paths and thread configuration
             :param source_dir (str): The path to the source directory containing files to copy
@@ -36,6 +37,7 @@ class ParallelFileCopier:
         self.source_dir = source_dir
         self.destination_dir = destination_dir
         self.number_of_threads = number_of_threads
+        self.logger = logger
 
         if not os.path.exists(self.source_dir):
             raise FileNotFoundError(f"Source directory does not exist")
@@ -60,7 +62,8 @@ class ParallelFileCopier:
         file_count = 0
         total_bytes = 0
 
-        print(f"[Producer] Indexing files in: {self.source_dir}")
+        #print(f"[Producer] Indexing files in: {self.source_dir}")
+        self.logger.write_info(f"[Producer] Indexing files in: {self.source_dir}")
 
         for root, dirs, files in os.walk(self.source_dir):
             for file in files:
@@ -79,7 +82,8 @@ class ParallelFileCopier:
                 file_count += 1
 
         readable_size = get_readable_size(total_bytes)
-        print(f"[Producer] Found {file_count} files. Total size: {readable_size}")
+        #print(f"[Producer] Found {file_count} files. Total size: {readable_size}")
+        self.logger.write_info(f"[Producer] Found {file_count} files. Total size: {readable_size}")
 
         for every_thread in range(self.number_of_threads):
             self.work_queue.put(None)
@@ -113,8 +117,8 @@ class ParallelFileCopier:
                 shutil.copy2(src_path, dest_path)
 
             except Exception as e:
-                print(f"[Worker {thread_id}] ERROR copying {src_path}: {e}")
-
+                #print(f"[Worker {thread_id}] ERROR copying {src_path}: {e}")
+                self.logger.write_error(f"[Worker {thread_id}] ERROR copying {src_path}: {e}")
             self.work_queue.task_done()
 
     def start_copying(self):
@@ -131,14 +135,16 @@ class ParallelFileCopier:
         start_time = time.time()
         threads = []
 
-        print(f"Starting {self.number_of_threads} Worker Threads...")
+       # print(f"Starting {self.number_of_threads} Worker Threads...")
+        self.logger.write_info(f"Starting {self.number_of_threads} Worker Threads...")
 
         for i in range(self.number_of_threads):
             t = threading.Thread(target=self._file_consumer, args=(i + 1,))
             t.start()
             threads.append(t)
 
-        print("Starting Producer Thread...")
+        #print("Starting Producer Thread...")
+        self.logger.write_info("Starting Producer Thread...")
         producer_thread = threading.Thread(target=self._file_producer)
         producer_thread.start()
 
@@ -151,4 +157,5 @@ class ParallelFileCopier:
         end_time = time.time()
         duration = end_time - start_time
 
-        print(f"Done, total time = {duration:.2f} seconds")
+        #print(f"Done, total time = {duration:.2f} seconds")
+        self.logger.write_info(f"Done, total time = {duration:.2f} seconds")

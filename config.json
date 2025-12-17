@@ -1,5 +1,6 @@
 {
-    "source": "D:\\Fotku",
+    "source": "D:\\Test",
     "destination": "D:\\Test",
-    "threads": 4
+    "threads": 4,
+    "log_file": "logs/app.log"
 }
