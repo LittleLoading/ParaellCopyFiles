@@ -1,6 +1,6 @@
 {
     "source": "C:\\Oracle",
-    "destination": "D:\\Test",
-    "threads": 4,
+    "destination": "E:\\Test",
+    "processes": 4,
     "log_file": "logs/app.log"
 }

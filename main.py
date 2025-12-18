@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
     source = config.get("source")
     destination = config.get("destination")
-    threads = config.get("threads",4)
+    processes = config.get("processes",4)
     log_file = config.get("log_file", "logs/app.log")
 
     if not source or not destination:
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
 
     try:
-        copier = ParallelFileCopier(source, destination, threads,logger)
+        copier = ParallelFileCopier(source, destination, processes,logger)
 
         copier.start_copying()
 
