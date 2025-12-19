@@ -25,38 +25,40 @@ This project is a Python script designed for recursive copying of large numbers 
 
 ```mermaid
 graph TD
-    %% Styly
+    %% Node Styles
     classDef config fill:#f9f,stroke:#333,stroke-width:2px;
     classDef threads fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
     classDef queue fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,stroke-dasharray: 5 5;
     classDef action fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
 
-    Start((Start)) --> Load[Načtení Konfigurace & Loggeru]
-    Load --> Init[Inicializace ParallelFileCopier]
-    Init -->|Spuštění| Threads[Spuštění vláken]
+    Start((Start)) --> Load[Load Config & Logger]
+    Load --> Init[Init ParallelFileCopier]
+    Init -->|Launch| Threads[Start Threads]
 
-    subgraph "Paralelní zpracování"
+    subgraph "Parallel Processing"
         direction TB
         
-        Threads --> Producer[Producer Vlákno]
-        Threads --> Consumers[Consumer Vlákna x4]
+        Threads --> Producer[Producer Thread]
+        Threads --> Consumers["Consumer Threads (x N)"]
         
-        Producer -->|1. Prohledá složku| Walk[os.walk Source]
-        Walk -->|2. Vloží cesty souborů| Q[(Fronta / Queue)]
+        Producer -->|1. Indexing| Walk[os.walk Source]
+        Walk -->|2. File Paths| Q[(Work Queue)]
         
-        Q -->|3. Vyzvedne úlohu| Consumers
-        Consumers -->|4. Kopíruje soubor| Copy[Zápis na disk]
+        Q -->|3. Fetch Task| Consumers
+        Consumers -->|4. Copy File| Copy[Write to Disk]
         
-        Copy -->|Logování| Logger[Zápis do Logu]
+        Copy -.->|Logging| Logger[Write to .log file]
     end
 
-    Producer -->|Konec souborů| FinishP[Ukončení Producenta]
-    Consumers -->|Fronta prázdná| FinishC[Ukončení Workerů]
+    Producer -->|All files found| FinishP[Terminate Producer]
+    Consumers -->|Queue Empty| FinishC[Terminate Workers]
     
-    FinishP --> Join[Čekání na dokončení]
+    %% Fixed the line below by adding quotes around the text
+    FinishP --> Join["Wait for completion (Join)"]
     FinishC --> Join
-    Join --> End((Konec))
+    Join --> End((End))
 
+    %% Apply Styles
     class Load,Init config;
     class Producer,Consumers threads;
     class Q queue;
