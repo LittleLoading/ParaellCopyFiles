@@ -1,6 +1,6 @@
 # Threaded File Copier
 
-This project is a Python script designed for efficient recursive copying of large numbers of files from a source directory to a destination directory. It implements the **Producer–Consumer** design pattern using **Threading** to handle concurrent I/O operations and maximize throughput.
+This project is a Python script designed for recursive copying of large numbers of files from a source directory to a destination directory. It implements the **Producer–Consumer** design pattern using **Threading** to handle concurrent I/O operations and maximize throughput.
 
 ## 🚀 Features
 
@@ -23,6 +23,46 @@ This project is a Python script designed for efficient recursive copying of larg
 * `lib/ReadableSize.py` – Helper module to convert bytes into human-readable formats (KB, MB, GB).
 * `config.json` – Configuration file (must be created/edited by the user).
 
+```mermaid
+graph TD
+    %% Styly
+    classDef config fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef threads fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
+    classDef queue fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef action fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+
+    Start((Start)) --> Load[Načtení Konfigurace & Loggeru]
+    Load --> Init[Inicializace ParallelFileCopier]
+    Init -->|Spuštění| Threads[Spuštění vláken]
+
+    subgraph "Paralelní zpracování"
+        direction TB
+        
+        Threads --> Producer[Producer Vlákno]
+        Threads --> Consumers[Consumer Vlákna x4]
+        
+        Producer -->|1. Prohledá složku| Walk[os.walk Source]
+        Walk -->|2. Vloží cesty souborů| Q[(Fronta / Queue)]
+        
+        Q -->|3. Vyzvedne úlohu| Consumers
+        Consumers -->|4. Kopíruje soubor| Copy[Zápis na disk]
+        
+        Copy -->|Logování| Logger[Zápis do Logu]
+    end
+
+    Producer -->|Konec souborů| FinishP[Ukončení Producenta]
+    Consumers -->|Fronta prázdná| FinishC[Ukončení Workerů]
+    
+    FinishP --> Join[Čekání na dokončení]
+    FinishC --> Join
+    Join --> End((Konec))
+
+    class Load,Init config;
+    class Producer,Consumers threads;
+    class Q queue;
+    class Walk,Copy action;
+```
+
 ## 🛠️ Requirements
 
 * **Python 3.x**
@@ -37,34 +77,20 @@ git clone <repository-url>
 cd <repository-folder>
 ```
 
-2. Create and Edit the Configuration File
-Create a file named config.json in the root directory. You can copy the example below.
+### 2. Create and Edit the Configuration File
 
-⚠️ IMPORTANT: You must update the source and destination paths in this file to match your actual directory structure before running the script.
+Create a file named `config.json` in the root directory. You can copy the example below.
 
-JSON
+> **⚠️ IMPORTANT:** You must update the source and destination paths in this file to match your actual directory structure before running the script.
 
+```json
 {
   "source": "D:\\Photos\\Source_Folder",
   "destination": "E:\\Backup\\Destination_Folder",
   "threads": 8,
   "log_file": "logs/app.log"
 }
-Configuration Parameters:
+```
 
-source: The absolute path to the folder you want to copy files from.
 
-destination: The absolute path where the files should be copied to.
 
-threads: Defines the number of worker threads. Since threads share memory and file copying is I/O bound, you can often set this higher than your CPU core count (e.g., 8-16) to saturate disk throughput.
-
-log_file: Path where the application log will be saved.
-
-3. Run the Script
-Bash
-
-python main.py
-4. Check Results
-Console output will show immediate errors if they occur.
-
-Detailed progress, statistics, and any file access errors are written to the log file defined in your config (default: logs/app.log).
